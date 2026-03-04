@@ -95,9 +95,8 @@ class App(tk.Tk):
             out = img.copy()
             
             for box in res.boxes:
-                # 1. ดึงค่าความมั่นใจ (Confidence Score)
                 conf = float(box.conf[0])
-                if conf < 0.4: continue
+                if conf < 0.65: continue
                 
                 xyxy = box.xyxy[0].cpu().numpy()
                 cls = res.names[int(box.cls[0])]
@@ -119,11 +118,16 @@ class App(tk.Tk):
                 
                 col_draw = (0, 140, 255) if is_car else (100, 255, 128)
                 x0, y0, x1, y1 = map(int, xyxy)
+                
                 cv2.rectangle(out, (x0, y0), (x1, y1), col_draw, 2)
                 
-                label = f"{cls} {conf:.2f}"
+                label = f"#{d['id']} {cls} {conf:.2f}"
+                
+                (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                cv2.rectangle(out, (x0, y0 - h - 15), (x0 + w, y0), col_draw, -1) 
+                
                 cv2.putText(out, label, (x0, y0 - 10), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, col_draw, 2)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
             self.result_pil = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
             self.after(0, self._done)
