@@ -1,5 +1,5 @@
 # config/config.py
-MODEL_PATHS = ["runs/best.pt", "best.pt", "yolov8n.pt"]
+MODEL_PATHS = ["runs/best.pt", "best.pt"]
 CAR_CLASSES  = {"car", "cars", "automobile", "vehicle", "truck", "van", "bus"}
 
 # สีสำหรับ UI

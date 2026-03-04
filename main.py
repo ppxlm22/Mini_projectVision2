@@ -87,19 +87,47 @@ class App(tk.Tk):
     def _detect(self):
         if not self.model: return
         self.b_det.disable()
+        
         def run():
-            img = cv2.imread(self.img_path); res = self.model(img, verbose=False)[0]; self.dets = []
+            img = cv2.imread(self.img_path)
+            res = self.model(img, verbose=False)[0]
+            self.dets = []
             out = img.copy()
+            
             for box in res.boxes:
-                if float(box.conf[0]) < 0.4: continue
-                xyxy = box.xyxy[0].cpu().numpy(); cls = res.names[int(box.cls[0])]
+                # 1. ดึงค่าความมั่นใจ (Confidence Score)
+                conf = float(box.conf[0])
+                if conf < 0.4: continue
+                
+                xyxy = box.xyxy[0].cpu().numpy()
+                cls = res.names[int(box.cls[0])]
                 is_car = cls.lower() in CAR_CLASSES
+                
                 color_info = kmeans_color(roi_from_xyxy(img, xyxy)) if is_car else [(0, "—", "#AAAAAA")]
-                d = dict(id=len(self.dets)+1, cls=cls, color=color_info[0][1], hex=color_info[0][2], clusters=color_info, box=xyxy, is_car=is_car)
+                
+                d = dict(
+                    id=len(self.dets)+1, 
+                    cls=cls, 
+                    conf=f"{conf:.2f}", 
+                    color=color_info[0][1], 
+                    hex=color_info[0][2], 
+                    clusters=color_info, 
+                    box=xyxy, 
+                    is_car=is_car
+                )
                 self.dets.append(d)
-                cv2.rectangle(out, (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3])), (0,140,255) if is_car else (128,128,128), 2)
+                
+                col_draw = (0, 140, 255) if is_car else (100, 255, 128)
+                x0, y0, x1, y1 = map(int, xyxy)
+                cv2.rectangle(out, (x0, y0), (x1, y1), col_draw, 2)
+                
+                label = f"{cls} {conf:.2f}"
+                cv2.putText(out, label, (x0, y0 - 10), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, col_draw, 2)
+
             self.result_pil = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
             self.after(0, self._done)
+            
         threading.Thread(target=run, daemon=True).start()
 
     def _done(self):
