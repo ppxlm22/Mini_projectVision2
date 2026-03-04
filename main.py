@@ -37,8 +37,8 @@ class RoundBtn(tk.Canvas):
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("🍊 Car Color Detector — Precision v2")
-        self.geometry("1320x860"); self.configure(bg=C["bg"])
+        self.title("🍊 Car Color Detector")
+        self.geometry("960x620"); self.configure(bg=C["bg"])
         self.model = None; self.img_path = None; self.dets = []; self._tkimg = None; self._cdata = []
         self._ttk(); self._ui()
         threading.Thread(target=self._load_model, daemon=True).start()
@@ -127,7 +127,7 @@ class App(tk.Tk):
                 cv2.rectangle(out, (x0, y0 - h - 15), (x0 + w, y0), col_draw, -1) 
                 
                 cv2.putText(out, label, (x0, y0 - 10), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (150, 255, 255), 1, cv2.LINE_AA)
 
             self.result_pil = Image.fromarray(cv2.cvtColor(out, cv2.COLOR_BGR2RGB))
             self.after(0, self._done)
